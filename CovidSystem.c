@@ -23,6 +23,7 @@ struct dataPatient {//Struct to save data about the patients;
     char email[240];
     char diagnoseData[240];
     char comorbidity[240];
+    int age;
 };
 
 int menuLogin() {// Register/Login in the system;
@@ -76,9 +77,11 @@ int login (){//Verify and do the login in the system to register the patients;
         return 0;
     }
 
-    //Read the 'auth.txt' file, to check the credentials.
-    fread(&user, sizeof(user), 1, arc);
-    fread(&password, sizeof(password), 1, arc);
+    while(!feof(arc)) {
+        //Read the 'auth.txt' file, to check the credentials.
+        fread(&user, sizeof(user), 1, arc);
+        fread(&password, sizeof(password), 1, arc);
+    }
 
     printf(CYN" ------ Login ------\n"RESET);
 
@@ -126,8 +129,11 @@ int login (){//Verify and do the login in the system to register the patients;
 
 void registering(){//Register a account in 'auth.txt';
     system("cls");
+    char currentUser[99];
+    char currentPassword[99];
     char user[99];
     char password[99];
+    int userExists;
 
     FILE *arc;
     arc = fopen("auth.txt", "a");
@@ -136,16 +142,15 @@ void registering(){//Register a account in 'auth.txt';
 
     fflush(stdin);
     printf("\nDigite seu nome de usuário: ");
-    gets(user);
+    gets(currentUser);
 
     fflush(stdin);
     printf("Digite sua senha: ");
-    gets(password);
-
+    gets(currentPassword);
 
     //Write in 'auth.txt' the user credentials.
-    fwrite(&user, sizeof(user), 1, arc);
-    fwrite(&password, sizeof(password), 1, arc);
+    fwrite(&currentUser, sizeof(currentUser), 1, arc);
+    fwrite(&currentPassword, sizeof(currentPassword), 1, arc);
     fclose(arc);
 
     printf(GRN"\nUsuário registrado com sucesso!!\n"RESET);
@@ -202,7 +207,6 @@ int submitData (struct dataPatient *p){//Write in 'patientsList.txt'/'peopleAtRi
     //Write data about the people at risk to 'peopleAtRisk.txt'.
     int yearAsNumber;
     int currentYear = 2021;
-    int idade;
     int confirm;
     char auxComorbidity[2] = "N";
     int isComorbidity;
@@ -212,11 +216,10 @@ int submitData (struct dataPatient *p){//Write in 'patientsList.txt'/'peopleAtRi
 
     //Passing the yearBorn(striing) to Number.
     yearAsNumber = atoi(p->yearBorn);
-    idade = currentYear - yearAsNumber;
-
+    p->age = currentYear - yearAsNumber;
 
     //Verifying age and comorbidity to write in 'peopleAtRisk.txt'.
-    if(idade <= 65 && isComorbidity != 0) {
+    if(p->age >= 65 || isComorbidity != 0) {
         FILE *arc2;
         arc2 = fopen("peopleAtRisk.txt", "ab");
         fwrite(&(*p), sizeof(struct dataPatient), 1, arc2);
@@ -307,7 +310,7 @@ void isAtRisk(struct dataPatient *p) {//Show registered patients at risk.
         printf("Email: "); puts(p->email);
         printf("Data do Diagnóstico: "); puts(p->diagnoseData);
         printf("Comorbidade: "); puts(p->comorbidity);
-        printf("Nascimento: "); puts(p->yearBorn);
+        printf("Idade: %d\n", p->age);
      }
 
     printf(YEL"\n\nPacientes em risco = %d", i);
